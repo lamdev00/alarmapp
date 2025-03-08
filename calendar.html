@@ -277,9 +277,30 @@
         .quick-details.show {
             display: block;
         }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #2575fc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #1a5bb8;
+        }
     </style>
 </head>
 <body>
+    <div class="nav-buttons" style="margin-bottom: 20px;">
+        <a href="index.html" class="nav-button">Home</a>
+    </div>
     <h1>Calendar</h1>
     <div class="info-windows">
         <div class="info-window">
@@ -324,6 +345,14 @@
         </div>
     </div>
 
+    <!-- Add this button in your calendar.html -->
+    <button id="dictationBtn" class="calendar-button" style="margin: 20px;">
+        Start Dictation
+    </button>
+
+    <!-- Add these scripts before your existing scripts -->
+    <script src="dictation.js"></script>
+    <script src="appData.js"></script>
     <script>
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -340,8 +369,7 @@
 
         // Helper function to check if a day has any events
         function hasEvents(year, month, day) {
-            const datePrefix = `${year}-${month}-${day}`;
-            return Object.keys(eventsData).some(key => key.startsWith(datePrefix));
+            return AppData.calendar.hasEvents(year, month, day);
         }
 
         function generateCalendar(month, year) {
@@ -420,8 +448,8 @@
                 timeBlock.className = 'time-block';
                 
                 // Check if there's an event for this time slot
-                const eventKey = getEventKey(year, month, day, hour);
-                const event = eventsData[eventKey];
+                const eventKey = AppData.calendar.getEventKey(year, month, day, hour);
+                const event = AppData.calendar.eventsData[eventKey];
                 
                 // Create time slot content
                 const timeContent = document.createElement('div');
@@ -514,11 +542,16 @@
             const monthIndex = monthNames.indexOf(month);
 
             // Save event data
-            const eventKey = getEventKey(year, monthIndex, parseInt(day), hour);
-            eventsData[eventKey] = {
+            const eventKey = AppData.calendar.getEventKey(year, monthIndex, parseInt(day), hour);
+            AppData.addEvent({
                 title: title,
                 details: details
-            };
+            }, {
+                year: year,
+                month: monthIndex,
+                day: parseInt(day),
+                hours: hour
+            });
 
             // Get the time block element
             const timeBlock = document.getElementById(`eventTitle${hour}`).closest('.time-block');
@@ -577,11 +610,11 @@
             // Get today's events
             const todayEvents = [];
             for (let hour = 0; hour < 24; hour++) {
-                const eventKey = getEventKey(thisYear, thisMonth, today, hour);
-                if (eventsData[eventKey]) {
+                const eventKey = AppData.calendar.getEventKey(thisYear, thisMonth, today, hour);
+                if (AppData.calendar.eventsData[eventKey]) {
                     todayEvents.push({
                         hour: hour,
-                        ...eventsData[eventKey]
+                        ...AppData.calendar.eventsData[eventKey]
                     });
                 }
             }
@@ -592,7 +625,7 @@
                 todaySchedule.innerHTML = todayEvents
                     .sort((a, b) => a.hour - b.hour)
                     .map(event => {
-                        const eventKey = getEventKey(thisYear, thisMonth, today, event.hour);
+                        const eventKey = AppData.calendar.getEventKey(thisYear, thisMonth, today, event.hour);
                         return `
                             <li>
                                 <div class="event-header">
@@ -618,7 +651,7 @@
             // Check today's remaining events
             nextEvent = todayEvents.find(event => event.hour >= currentHour);
             if (nextEvent) {
-                nextEventKey = getEventKey(thisYear, thisMonth, today, nextEvent.hour);
+                nextEventKey = AppData.calendar.getEventKey(thisYear, thisMonth, today, nextEvent.hour);
             }
             
             if (nextEvent) {
@@ -637,18 +670,18 @@
                 for (let day = today + 1; day <= 31; day++) {
                     const futureEvents = [];
                     for (let hour = 0; hour < 24; hour++) {
-                        const eventKey = getEventKey(thisYear, thisMonth, day, hour);
-                        if (eventsData[eventKey]) {
+                        const eventKey = AppData.calendar.getEventKey(thisYear, thisMonth, day, hour);
+                        if (AppData.calendar.eventsData[eventKey]) {
                             futureEvents.push({
                                 day: day,
                                 hour: hour,
-                                ...eventsData[eventKey]
+                                ...AppData.calendar.eventsData[eventKey]
                             });
                         }
                     }
                     if (futureEvents.length > 0) {
                         nextEvent = futureEvents.sort((a, b) => a.hour - b.hour)[0];
-                        nextEventKey = getEventKey(thisYear, thisMonth, nextEvent.day, nextEvent.hour);
+                        nextEventKey = AppData.calendar.getEventKey(thisYear, thisMonth, nextEvent.day, nextEvent.hour);
                         upcomingEvent.innerHTML = `
                             <div class="event-header">
                                 <p><strong onclick="showQuickEventDetails(event, '${nextEventKey}', 'upcoming')" 
@@ -694,6 +727,30 @@
         updateInfoWindows();
 
         generateCalendar(currentMonth, currentYear);
+
+        document.getElementById('dictationBtn').addEventListener('click', () => {
+            window.dictationHandler.startDictation();
+        });
+
+        // Modify the addEventToCalendar function
+        window.addEventToCalendar = function(event) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            AppData.addEvent(event, {
+                year: tomorrow.getFullYear(),
+                month: tomorrow.getMonth(),
+                day: tomorrow.getDate(),
+                hours: parseInt(event.time.split(':')[0]),
+                minutes: parseInt(event.time.split(':')[1])
+            });
+            
+            generateCalendar(AppData.calendar.currentMonth, AppData.calendar.currentYear);
+            updateInfoWindows();
+        };
+
+        // Initialize calendar with AppData
+        generateCalendar(AppData.calendar.currentMonth, AppData.calendar.currentYear);
     </script>
 </body>
 </html> 

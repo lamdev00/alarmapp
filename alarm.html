@@ -243,6 +243,8 @@
 
     <!-- Add shared.js before the inline script -->
     <script src="shared.js"></script>
+    <script src="dictation.js"></script>
+    <script src="appData.js"></script>
     <script>
         let alarms = [];
         let alarmSound = null;
@@ -371,14 +373,15 @@
             
             const alarm = {
                 time: alarmTime,
-                active: true,
                 id: Date.now(),
+                active: true,
                 stage1Triggered: false,
                 stage2Triggered: false,
                 stage3Triggered: false
             };
             
-            alarms.push(alarm);
+            AppData.alarms.list.push(alarm);
+            AppData.saveData();
             updateAlarmsList();
         }
 
@@ -387,7 +390,7 @@
             const currentMinute = now.getMinutes();
             const currentSecond = now.getSeconds();
             
-            alarms.forEach(alarm => {
+            AppData.alarms.list.forEach(alarm => {
                 if (!alarm.active) return;
 
                 const [alarmHour, alarmMinute] = alarm.time.split(':').map(Number);
@@ -497,15 +500,17 @@
         }
 
         function toggleAlarm(id) {
-            const alarm = alarms.find(a => a.id === id);
+            const alarm = AppData.alarms.list.find(a => a.id === id);
             if (alarm) {
                 alarm.active = !alarm.active;
+                AppData.saveData();
                 updateAlarmsList();
             }
         }
 
         function deleteAlarm(id) {
-            alarms = alarms.filter(a => a.id !== id);
+            AppData.alarms.list = AppData.alarms.list.filter(a => a.id !== id);
+            AppData.saveData();
             updateAlarmsList();
         }
 
@@ -513,7 +518,7 @@
             const alarmsList = document.getElementById('alarmsList');
             alarmsList.innerHTML = '';
 
-            alarms.forEach(alarm => {
+            AppData.alarms.list.forEach(alarm => {
                 const alarmItem = document.createElement('div');
                 alarmItem.className = 'alarm-item';
                 
@@ -544,6 +549,40 @@
         window.onload = function() {
             initializeTimePicker();
             initializeAlarmSound();
+            updateAlarmsList();
+        };
+
+        // Implement the setAlarmTime function
+        window.setAlarmTime = function(time) {
+            const [hours, minutes] = time.split(':');
+            // Set the time in your time picker
+            const hourElement = document.querySelector('.hours .selected');
+            const minuteElement = document.querySelector('.minutes .selected');
+            if (hourElement && minuteElement) {
+                // Convert 24-hour format to 12-hour
+                let displayHour = parseInt(hours);
+                const isPM = displayHour >= 12;
+                if (displayHour > 12) displayHour -= 12;
+                if (displayHour === 0) displayHour = 12;
+                
+                // Update the time picker
+                hourElement.textContent = displayHour.toString().padStart(2, '0');
+                minuteElement.textContent = minutes;
+                
+                // Set AM/PM
+                const amBtn = document.getElementById('amBtn');
+                const pmBtn = document.getElementById('pmBtn');
+                if (isPM) {
+                    pmBtn.classList.add('selected');
+                    amBtn.classList.remove('selected');
+                } else {
+                    amBtn.classList.add('selected');
+                    pmBtn.classList.remove('selected');
+                }
+                
+                // Set the alarm
+                setAlarm();
+            }
         };
     </script>
 </body>
