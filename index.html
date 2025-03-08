@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Reader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #countdown {
+            font-size: 2em;
+        }
+        .calendar-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #2575fc;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-button:hover {
+            background-color: #1a5bb8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather Reader</h1>
+    <div id="countdown">Next update in: 10:00</div>
+    <button onclick="readWeather()">Read Current Temperature</button>
+    <div>
+        <input type="time" id="scheduleTime" />
+        <button onclick="scheduleReadout()">Schedule Readout</button>
+    </div>
+    <a href="calendar.html" class="calendar-button">
+        Open Calendar
+    </a>
+    <a href="alarm.html" class="calendar-button" style="margin-left: 10px;">
+        Wake-up Alarm
+    </a>
+    <script src="shared.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

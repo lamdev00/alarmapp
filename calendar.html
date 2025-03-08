@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            width: 90%;
+            max-width: 600px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .day, .day-name {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .day-name {
+            font-weight: bold;
+            background: #e0e0e0;
+        }
+        .current-day {
+            background: #2575fc;
+            color: #fff;
+        }
+        .month-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .month-display {
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0.5em;
+            border-radius: 5px;
+            background-color: #2575fc;
+            color: #fff;
+            transition: background 0.3s;
+        }
+        .month-display:hover {
+            background-color: #1a5bb8;
+        }
+        .month-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+        .month-dropdown div {
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .month-dropdown div:hover {
+            background-color: #f0f0f0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #timeBlocks {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+            /* Styling the scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #2575fc #f0f0f0;
+        }
+        /* Webkit scrollbar styling */
+        #timeBlocks::-webkit-scrollbar {
+            width: 8px;
+        }
+        #timeBlocks::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        #timeBlocks::-webkit-scrollbar-thumb {
+            background-color: #2575fc;
+            border-radius: 4px;
+        }
+        .time-block {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            position: relative;
+        }
+        .time-block:hover {
+            background-color: #f0f0f0;
+        }
+        .event-options {
+            display: none;
+            margin-top: 10px;
+        }
+        .event-options input, .event-options textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .event-options button {
+            margin-top: 5px;
+            padding: 10px;
+            background-color: #2575fc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .event-options button:hover {
+            background-color: #1a5bb8;
+        }
+        .day {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #2575fc;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .time-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .time {
+            min-width: 50px;
+            color: #666;
+        }
+        .event-title {
+            color: #2575fc;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .event-details-view {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .event-details-view h4 {
+            margin: 0 0 8px 0;
+            color: #2575fc;
+        }
+        .event-details-view p {
+            margin: 0;
+            color: #666;
+        }
+        .info-windows {
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .info-window {
+            flex: 1;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .info-window:hover {
+            transform: translateY(-2px);
+        }
+        .info-window-content {
+            position: relative;
+            z-index: 1;
+        }
+        .info-window h3 {
+            margin: 0 0 10px 0;
+            color: #2575fc;
+            font-size: 1.2em;
+        }
+        .event-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .event-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .event-list li:hover {
+            background-color: #f8f9fa;
+        }
+        .event-list li:last-child {
+            border-bottom: none;
+        }
+        .event-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quick-details {
+            display: none;
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .quick-details.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calendar</h1>
+    <div class="info-windows">
+        <div class="info-window">
+            <h3>Upcoming Event</h3>
+            <div id="upcomingEvent" class="info-window-content">
+                <p>No upcoming events</p>
+            </div>
+        </div>
+        <div class="info-window">
+            <h3>Today's Schedule</h3>
+            <ul id="todaySchedule" class="event-list info-window-content">
+                <p>No events scheduled for today</p>
+            </ul>
+        </div>
+    </div>
+    <div class="month-navigation">
+        <div class="month-display" onclick="toggleDropdown()">
+            <span id="monthYear"></span>
+        </div>
+        <div class="month-dropdown" id="monthDropdown">
+            <div onclick="selectMonth(0)">January</div>
+            <div onclick="selectMonth(1)">February</div>
+            <div onclick="selectMonth(2)">March</div>
+            <div onclick="selectMonth(3)">April</div>
+            <div onclick="selectMonth(4)">May</div>
+            <div onclick="selectMonth(5)">June</div>
+            <div onclick="selectMonth(6)">July</div>
+            <div onclick="selectMonth(7)">August</div>
+            <div onclick="selectMonth(8)">September</div>
+            <div onclick="selectMonth(9)">October</div>
+            <div onclick="selectMonth(10)">November</div>
+            <div onclick="selectMonth(11)">December</div>
+        </div>
+    </div>
+    <div class="calendar" id="calendarGrid"></div>
+
+    <!-- Modal for Daily View -->
+    <div class="modal" id="dailyModal">
+        <div class="modal-content">
+            <h2 id="selectedDate"></h2>
+            <div id="timeBlocks"></div>
+        </div>
+    </div>
+
+    <script>
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // Store events data
+        let eventsData = {};
+
+        // Helper function to generate unique key for events
+        function getEventKey(year, month, day, hour) {
+            return `${year}-${month}-${day}-${hour}`;
+        }
+
+        // Helper function to check if a day has any events
+        function hasEvents(year, month, day) {
+            const datePrefix = `${year}-${month}-${day}`;
+            return Object.keys(eventsData).some(key => key.startsWith(datePrefix));
+        }
+
+        function generateCalendar(month, year) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = ''; // Clear previous calendar
+
+            // Add day names
+            dayNames.forEach(day => {
+                const dayNameBox = document.createElement('div');
+                dayNameBox.className = 'day-name';
+                dayNameBox.textContent = day;
+                calendarGrid.appendChild(dayNameBox);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Fill in the blanks for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyBox = document.createElement('div');
+                emptyBox.className = 'day';
+                calendarGrid.appendChild(emptyBox);
+            }
+
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day';
+                dayBox.textContent = day;
+                dayBox.onclick = () => openDailyView(day, month, year);
+
+                // Highlight the current day
+                if (day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
+                    dayBox.classList.add('current-day');
+                }
+
+                // Add event dot if day has events
+                if (hasEvents(year, month, day)) {
+                    const eventDot = document.createElement('div');
+                    eventDot.className = 'event-dot';
+                    dayBox.appendChild(eventDot);
+                }
+
+                calendarGrid.appendChild(dayBox);
+            }
+
+            // Update month and year display
+            document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('monthDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function selectMonth(month) {
+            currentMonth = month;
+            generateCalendar(currentMonth, currentYear);
+            toggleDropdown(); // Close the dropdown after selection
+        }
+
+        function openDailyView(day, month, year) {
+            const modal = document.getElementById('dailyModal');
+            const selectedDate = document.getElementById('selectedDate');
+            const timeBlocks = document.getElementById('timeBlocks');
+
+            selectedDate.textContent = `${monthNames[month]} ${day}, ${year}`;
+            timeBlocks.innerHTML = ''; // Clear previous time blocks
+
+            // Scroll to current hour when opening daily view
+            const currentHour = new Date().getHours();
+            
+            // Create time blocks for each hour
+            for (let hour = 0; hour < 24; hour++) {
+                const timeBlock = document.createElement('div');
+                timeBlock.className = 'time-block';
+                
+                // Check if there's an event for this time slot
+                const eventKey = getEventKey(year, month, day, hour);
+                const event = eventsData[eventKey];
+                
+                // Create time slot content
+                const timeContent = document.createElement('div');
+                timeContent.className = 'time-content';
+                if (event) {
+                    timeContent.innerHTML = `
+                        <span class="time">${hour}:00</span>
+                        <span class="event-title" onclick="toggleEventDetails(event, '${eventKey}')">${event.title}</span>
+                    `;
+                    // Create details view (initially hidden)
+                    const detailsView = document.createElement('div');
+                    detailsView.className = 'event-details-view';
+                    detailsView.id = `details-${eventKey}`;
+                    detailsView.innerHTML = `
+                        <h4>${event.title}</h4>
+                        <p>${event.details || 'No details provided'}</p>
+                    `;
+                    timeBlock.appendChild(timeContent);
+                    timeBlock.appendChild(detailsView);
+                } else {
+                    timeContent.innerHTML = `
+                        <span class="time">${hour}:00</span>
+                    `;
+                    timeBlock.appendChild(timeContent);
+                }
+
+                timeBlock.onclick = () => toggleEventOptions(timeBlock, hour);
+                timeBlocks.appendChild(timeBlock);
+                
+                // If this is the current hour, scroll to it
+                if (hour === currentHour) {
+                    setTimeout(() => {
+                        timeBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            }
+
+            modal.style.display = 'flex'; // Show the modal
+        }
+
+        function toggleEventDetails(e, eventKey) {
+            e.stopPropagation(); // Prevent triggering the timeBlock click event
+            const detailsView = document.getElementById(`details-${eventKey}`);
+            const currentDisplay = detailsView.style.display;
+            
+            // Hide all other detail views first
+            document.querySelectorAll('.event-details-view').forEach(view => {
+                view.style.display = 'none';
+            });
+            
+            // Toggle this detail view
+            detailsView.style.display = currentDisplay === 'block' ? 'none' : 'block';
+        }
+
+        function toggleEventOptions(timeBlock, hour) {
+            // Hide any open detail views first
+            document.querySelectorAll('.event-details-view').forEach(view => {
+                view.style.display = 'none';
+            });
+
+            let eventOptions = timeBlock.querySelector('.event-options');
+            if (!eventOptions) {
+                eventOptions = document.createElement('div');
+                eventOptions.className = 'event-options';
+                eventOptions.innerHTML = `
+                    <input type="text" placeholder="Event Title" id="eventTitle${hour}">
+                    <textarea placeholder="Event Details" id="eventDetails${hour}"></textarea>
+                    <button onclick="saveEvent(${hour})">Save Event</button>
+                `;
+                // Prevent clicks within the event options from closing the form
+                eventOptions.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+                timeBlock.appendChild(eventOptions);
+            }
+            eventOptions.style.display = eventOptions.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function saveEvent(hour) {
+            const title = document.getElementById(`eventTitle${hour}`).value;
+            const details = document.getElementById(`eventDetails${hour}`).value;
+            if (!title.trim()) {
+                alert('Please enter an event title');
+                return;
+            }
+
+            // Get the current selected date
+            const selectedDate = document.getElementById('selectedDate').textContent;
+            const [month, day, year] = selectedDate.split(' ');
+            const monthIndex = monthNames.indexOf(month);
+
+            // Save event data
+            const eventKey = getEventKey(year, monthIndex, parseInt(day), hour);
+            eventsData[eventKey] = {
+                title: title,
+                details: details
+            };
+
+            // Get the time block element
+            const timeBlock = document.getElementById(`eventTitle${hour}`).closest('.time-block');
+
+            // Update the time block content to show the new event
+            const timeContent = timeBlock.querySelector('.time-content');
+            timeContent.innerHTML = `
+                <span class="time">${hour}:00</span>
+                <span class="event-title" onclick="toggleEventDetails(event, '${eventKey}')">${title}</span>
+            `;
+            
+            // Add the details view
+            let detailsView = timeBlock.querySelector('.event-details-view');
+            if (!detailsView) {
+                detailsView = document.createElement('div');
+                detailsView.className = 'event-details-view';
+                detailsView.id = `details-${eventKey}`;
+                timeBlock.appendChild(detailsView);
+            }
+            detailsView.innerHTML = `
+                <h4>${title}</h4>
+                <p>${details || 'No details provided'}</p>
+            `;
+            
+            // Remove the event options form
+            const eventOptions = timeBlock.querySelector('.event-options');
+            if (eventOptions) {
+                eventOptions.remove();
+            }
+            
+            // Show a brief success message
+            alert('Event saved successfully!');
+
+            // Regenerate calendar to show updated event dots
+            generateCalendar(currentMonth, currentYear);
+
+            // After saving the event, update the info windows
+            updateInfoWindows();
+        }
+
+        // Close the modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('dailyModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        function updateInfoWindows() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const today = now.getDate();
+            const thisMonth = now.getMonth();
+            const thisYear = now.getFullYear();
+            
+            // Get today's events
+            const todayEvents = [];
+            for (let hour = 0; hour < 24; hour++) {
+                const eventKey = getEventKey(thisYear, thisMonth, today, hour);
+                if (eventsData[eventKey]) {
+                    todayEvents.push({
+                        hour: hour,
+                        ...eventsData[eventKey]
+                    });
+                }
+            }
+            
+            // Update Today's Schedule
+            const todaySchedule = document.getElementById('todaySchedule');
+            if (todayEvents.length > 0) {
+                todaySchedule.innerHTML = todayEvents
+                    .sort((a, b) => a.hour - b.hour)
+                    .map(event => {
+                        const eventKey = getEventKey(thisYear, thisMonth, today, event.hour);
+                        return `
+                            <li>
+                                <div class="event-header">
+                                    <span onclick="showQuickEventDetails(event, '${eventKey}', 'schedule')" 
+                                          style="cursor: pointer; color: #2575fc;">${event.title}</span>
+                                    <span class="event-time">${event.hour}:00</span>
+                                </div>
+                                <div class="quick-details" id="schedule-details-${eventKey}">
+                                    ${event.details || 'No details provided'}
+                                </div>
+                            </li>
+                        `;
+                    }).join('');
+            } else {
+                todaySchedule.innerHTML = '<p>No events scheduled for today</p>';
+            }
+            
+            // Find next upcoming event
+            const upcomingEvent = document.getElementById('upcomingEvent');
+            let nextEvent = null;
+            let nextEventKey = null;
+            
+            // Check today's remaining events
+            nextEvent = todayEvents.find(event => event.hour >= currentHour);
+            if (nextEvent) {
+                nextEventKey = getEventKey(thisYear, thisMonth, today, nextEvent.hour);
+            }
+            
+            if (nextEvent) {
+                upcomingEvent.innerHTML = `
+                    <div class="event-header">
+                        <p><strong onclick="showQuickEventDetails(event, '${nextEventKey}', 'upcoming')" 
+                                 style="cursor: pointer; color: #2575fc;">${nextEvent.title}</strong></p>
+                        <p class="event-time">Today at ${nextEvent.hour}:00</p>
+                    </div>
+                    <div class="quick-details" id="upcoming-details-${nextEventKey}">
+                        ${nextEvent.details || 'No details provided'}
+                    </div>
+                `;
+            } else {
+                // Look for next event in future days
+                for (let day = today + 1; day <= 31; day++) {
+                    const futureEvents = [];
+                    for (let hour = 0; hour < 24; hour++) {
+                        const eventKey = getEventKey(thisYear, thisMonth, day, hour);
+                        if (eventsData[eventKey]) {
+                            futureEvents.push({
+                                day: day,
+                                hour: hour,
+                                ...eventsData[eventKey]
+                            });
+                        }
+                    }
+                    if (futureEvents.length > 0) {
+                        nextEvent = futureEvents.sort((a, b) => a.hour - b.hour)[0];
+                        nextEventKey = getEventKey(thisYear, thisMonth, nextEvent.day, nextEvent.hour);
+                        upcomingEvent.innerHTML = `
+                            <div class="event-header">
+                                <p><strong onclick="showQuickEventDetails(event, '${nextEventKey}', 'upcoming')" 
+                                         style="cursor: pointer; color: #2575fc;">${nextEvent.title}</strong></p>
+                                <p class="event-time">${monthNames[thisMonth]} ${nextEvent.day} at ${nextEvent.hour}:00</p>
+                            </div>
+                            <div class="quick-details" id="upcoming-details-${nextEventKey}">
+                                ${nextEvent.details || 'No details provided'}
+                            </div>
+                        `;
+                        break;
+                    }
+                }
+                if (!nextEvent) {
+                    upcomingEvent.innerHTML = '<p>No upcoming events</p>';
+                }
+            }
+        }
+
+        function openTodayView() {
+            const now = new Date();
+            openDailyView(now.getDate(), now.getMonth(), now.getFullYear());
+        }
+
+        function showQuickEventDetails(e, eventKey, section) {
+            e.stopPropagation();
+            const detailsElement = document.getElementById(`${section}-details-${eventKey}`);
+            if (detailsElement) {
+                // Find the parent info window
+                const parentWindow = detailsElement.closest('.info-window');
+                // Hide all other detail elements first
+                parentWindow.querySelectorAll('.quick-details').forEach(el => {
+                    if (el !== detailsElement) {
+                        el.classList.remove('show');
+                    }
+                });
+                // Toggle this detail element
+                detailsElement.classList.toggle('show');
+            }
+        }
+
+        // Update info windows when the page loads
+        updateInfoWindows();
+
+        generateCalendar(currentMonth, currentYear);
+    </script>
+</body>
+</html> 
