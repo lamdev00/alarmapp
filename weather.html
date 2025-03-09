@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather - Evigo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .city-name {
+            font-size: 28px;
+            color: #ff00ff;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,0,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .city-name:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 15px rgba(255,0,255,0.5);
+        }
+
+        .weather-container {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 100px;
+        }
+
+        .current-weather {
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .current-temp {
+            font-size: 4em;
+            font-weight: bold;
+            color: #ff00ff;
+            text-shadow: 0 0 10px rgba(255,0,255,0.3);
+            margin: 20px 0;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.2em;
+            color: #ff00ff;
+        }
+
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .forecast-day {
+            background: rgba(42, 42, 42, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .forecast-day:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255,0,255,0.2);
+        }
+
+        .day-name {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #ff00ff;
+        }
+
+        .nav-container {
+            position: fixed;
+            bottom: 40px;
+            width: 90%;
+            max-width: 400px;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-icons {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 20px;
+            border-radius: 12px;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-5px);
+            color: #ff00ff;
+        }
+
+        .center-button {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -45px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            color: white;
+            text-align: center;
+        }
+
+        .center-button:hover {
+            transform: translateY(-8px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255,0,255,0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: rgba(42, 42, 42, 0.95);
+            margin: 15% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #citySearchInput {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #citySearchInput:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255,0,255,0.3);
+        }
+
+        #searchButton {
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #searchButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
+        }
+
+        #searchResults {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding-right: 10px;
+        }
+
+        #searchResults::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #searchResults::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        #searchResults::-webkit-scrollbar-thumb {
+            background: rgba(255, 0, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        #searchResults::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 0, 255, 0.5);
+        }
+
+        .search-result {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .search-result:hover {
+            background: rgba(255, 0, 255, 0.2);
+            transform: translateX(5px);
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo">Evigo</div>
+        <div class="city-name" id="cityName">New York</div>
+    </div>
+
+    <div class="weather-container">
+        <div class="current-weather">
+            <div class="current-temp" id="currentTemp">--°F</div>
+            <div class="weather-details">
+                <div class="detail-item">
+                    <div class="detail-label">Feels Like</div>
+                    <div class="detail-value" id="feelsLike">--°F</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Humidity</div>
+                    <div class="detail-value" id="humidity">--%</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Wind</div>
+                    <div class="detail-value" id="windSpeed">-- mph</div>
+                </div>
+            </div>
+            <div id="weatherCondition">Loading weather data...</div>
+        </div>
+
+        <div class="forecast" id="forecast">
+            <!-- Forecast days will be inserted here -->
+        </div>
+    </div>
+
+    <div class="nav-container">
+        <div class="nav-icons">
+            <a href="alarm.html" class="nav-item">
+                ALARM
+            </a>
+            <a href="index.html" class="center-button">
+                HOME
+            </a>
+            <a href="calendar.html" class="nav-item">
+                CALENDAR
+            </a>
+        </div>
+    </div>
+
+    <div id="citySearchModal" class="modal">
+        <div class="modal-content">
+            <div class="search-container">
+                <input type="text" id="citySearchInput" placeholder="Enter city name...">
+                <button id="searchButton">Search</button>
+            </div>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <script src="appData.js"></script>
+    <script src="weatherService.js"></script>
+    <script>
+        async function updateWeatherDisplay() {
+            const weatherData = await WeatherService.getCurrentWeather();
+            if (weatherData) {
+                document.getElementById('cityName').textContent = WeatherService.city;
+                document.getElementById('currentTemp').textContent = 
+                    `${weatherData.currentTemp}°F`;
+                document.getElementById('feelsLike').textContent = 
+                    `${weatherData.feelsLike}°F`;
+                document.getElementById('humidity').textContent = 
+                    `${weatherData.humidity}%`;
+                document.getElementById('windSpeed').textContent = 
+                    `${weatherData.windSpeed} mph`;
+                document.getElementById('weatherCondition').textContent = 
+                    weatherData.conditions;
+            }
+        }
+
+        async function updateForecastDisplay() {
+            const forecast = await WeatherService.getForecast();
+            if (forecast) {
+                const forecastContainer = document.getElementById('forecast');
+                forecastContainer.innerHTML = '';
+
+                Object.entries(forecast).slice(0, 7).forEach(([day, data]) => {
+                    const forecastDay = document.createElement('div');
+                    forecastDay.className = 'forecast-day';
+                    forecastDay.innerHTML = `
+                        <div class="day-name">${day}</div>
+                        <div class="forecast-temp">${Math.round(data.temp)}°F</div>
+                        <div class="forecast-condition">${data.condition}</div>
+                    `;
+                    forecastContainer.appendChild(forecastDay);
+                });
+            }
+        }
+
+        // Initialize weather data
+        updateWeatherDisplay();
+        updateForecastDisplay();
+
+        // Update weather every 30 minutes
+        setInterval(() => {
+            updateWeatherDisplay();
+            updateForecastDisplay();
+        }, 30 * 60 * 1000);
+
+        // Get modal elements
+        const modal = document.getElementById('citySearchModal');
+        const cityNameElement = document.getElementById('cityName');
+        const searchInput = document.getElementById('citySearchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+
+        // Show modal when city name is clicked
+        cityNameElement.addEventListener('click', () => {
+            modal.style.display = 'block';
+            searchInput.focus();
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Add this function to handle search results display
+        async function showSearchResults(query) {
+            if (!query.trim()) {
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            const cities = await WeatherService.searchCities(query);
+            if (cities.length > 0) {
+                searchResults.innerHTML = cities.map(city => `
+                    <div class="search-result" data-lat="${city.lat}" data-lon="${city.lon}" data-name="${city.name}">
+                        ${city.displayName}
+                    </div>
+                `).join('');
+
+                // Add click handlers to search results
+                document.querySelectorAll('.search-result').forEach(result => {
+                    result.addEventListener('click', async () => {
+                        const lat = result.dataset.lat;
+                        const lon = result.dataset.lon;
+                        const cityName = result.dataset.name;
+
+                        // Update WeatherService with new location
+                        WeatherService.setSelectedLocation(cityName, parseFloat(lat), parseFloat(lon));
+
+                        // Update weather displays
+                        await updateWeatherDisplay();
+                        await updateForecastDisplay();
+
+                        // Close modal and clear input
+                        modal.style.display = 'none';
+                        searchInput.value = '';
+                        searchResults.innerHTML = '';
+                    });
+                });
+            } else {
+                searchResults.innerHTML = '<div class="search-result">No cities found</div>';
+            }
+        }
+
+        // Update search input handler to show results as user types
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                showSearchResults(e.target.value);
+            }, 500); // Debounce for 500ms
+        });
+
+        // Update handleSearch function
+        async function handleSearch() {
+            const cityName = searchInput.value.trim();
+            if (!cityName) return;
+            await showSearchResults(cityName);
+        }
+
+        // Keep the existing event listeners
+        searchButton.addEventListener('click', handleSearch);
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+    </script>
+</body>
+</html> 

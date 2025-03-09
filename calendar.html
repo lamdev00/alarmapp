@@ -8,300 +8,298 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background: #f4f4f9;
-            color: #333;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
         }
-        h1 {
-            margin-bottom: 20px;
+
+        .logo-container {
+            margin-top: 40px;
+            margin-bottom: 40px;
         }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .calendar-container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 100px;
+        }
+
         .calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
-            width: 90%;
-            max-width: 600px;
-            background: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
+
         .day, .day-name {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             padding: 10px;
             text-align: center;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            transition: all 0.3s ease;
         }
+
+        .day:hover {
+            background: rgba(255, 0, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
         .day-name {
             font-weight: bold;
-            background: #e0e0e0;
+            background: rgba(255, 0, 255, 0.2);
         }
+
         .current-day {
-            background: #2575fc;
-            color: #fff;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
         }
+
         .month-navigation {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 90%;
-            max-width: 600px;
             margin-bottom: 20px;
             position: relative;
         }
+
         .month-display {
             font-size: 1.5em;
             cursor: pointer;
-            padding: 0.5em;
-            border-radius: 5px;
-            background-color: #2575fc;
-            color: #fff;
-            transition: background 0.3s;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            color: white;
+            transition: all 0.3s ease;
         }
+
         .month-display:hover {
-            background-color: #1a5bb8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
         }
+
         .month-dropdown {
-            display: none;
             position: absolute;
             top: 100%;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 1;
+            background: rgba(42, 42, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            display: none;
         }
+
         .month-dropdown div {
-            padding: 10px;
+            padding: 10px 20px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
         }
+
         .month-dropdown div:hover {
-            background-color: #f0f0f0;
+            background: rgba(255, 0, 255, 0.2);
         }
-        .modal {
-            display: none;
+
+        .nav-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 400px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #timeBlocks {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-            /* Styling the scrollbar */
-            scrollbar-width: thin;
-            scrollbar-color: #2575fc #f0f0f0;
-        }
-        /* Webkit scrollbar styling */
-        #timeBlocks::-webkit-scrollbar {
-            width: 8px;
-        }
-        #timeBlocks::-webkit-scrollbar-track {
-            background: #f0f0f0;
-            border-radius: 4px;
-        }
-        #timeBlocks::-webkit-scrollbar-thumb {
-            background-color: #2575fc;
-            border-radius: 4px;
-        }
-        .time-block {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-            position: relative;
-        }
-        .time-block:hover {
-            background-color: #f0f0f0;
-        }
-        .event-options {
-            display: none;
-            margin-top: 10px;
-        }
-        .event-options input, .event-options textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .event-options button {
-            margin-top: 5px;
-            padding: 10px;
-            background-color: #2575fc;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .event-options button:hover {
-            background-color: #1a5bb8;
-        }
-        .day {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-        }
-        .event-dot {
-            width: 6px;
-            height: 6px;
-            background-color: #2575fc;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .time-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .time {
-            min-width: 50px;
-            color: #666;
-        }
-        .event-title {
-            color: #2575fc;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .event-details-view {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        .event-details-view h4 {
-            margin: 0 0 8px 0;
-            color: #2575fc;
-        }
-        .event-details-view p {
-            margin: 0;
-            color: #666;
-        }
-        .info-windows {
+            bottom: 40px;
             width: 90%;
-            max-width: 600px;
-            margin-bottom: 20px;
+            max-width: 400px;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-icons {
             display: flex;
-            gap: 20px;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
         }
-        .info-window {
-            flex: 1;
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 20px;
+            border-radius: 12px;
+            z-index: 1;
+            letter-spacing: 0.5px;
         }
-        .info-window:hover {
+
+        .nav-item:hover {
+            transform: translateY(-5px);
+            color: #ff00ff;
+        }
+
+        .center-button {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -45px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            color: white;
+            text-align: center;
+        }
+
+        .center-button:hover {
+            transform: translateY(-8px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255,0,255,0.4);
+        }
+
+        /* Update modal styles */
+        .modal {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(42, 42, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: white;
+        }
+
+        .time-block {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .time-block:hover {
+            background: rgba(255, 0, 255, 0.2);
             transform: translateY(-2px);
         }
-        .info-window-content {
-            position: relative;
-            z-index: 1;
+
+        .info-windows {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            gap: 20px;
+            margin: 20px auto;
         }
+
+        .info-window {
+            flex: 1;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .info-window h3 {
-            margin: 0 0 10px 0;
-            color: #2575fc;
-            font-size: 1.2em;
+            color: #ff00ff;
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            text-align: center;
         }
+
         .event-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-        .event-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .event-list li:hover {
-            background-color: #f8f9fa;
-        }
-        .event-list li:last-child {
-            border-bottom: none;
-        }
-        .event-time {
-            color: #666;
-            font-size: 0.9em;
-        }
+
         .event-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
         }
+
+        .event-title {
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .event-time {
+            color: #ff00ff;
+            font-size: 0.9em;
+        }
+
         .quick-details {
             display: none;
-            margin-top: 8px;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             font-size: 0.9em;
-            color: #666;
+            color: #ddd;
         }
+
         .quick-details.show {
             display: block;
         }
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .nav-button {
-            padding: 10px 20px;
-            background-color: #2575fc;
+
+        .delete-event-btn {
+            padding: 5px 15px;
+            background: linear-gradient(145deg, #ff0055, #cc0044);
             color: white;
-            text-decoration: none;
+            border: none;
             border-radius: 5px;
-            font-family: 'Roboto', sans-serif;
-            transition: background-color 0.3s;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
-        .nav-button:hover {
-            background-color: #1a5bb8;
+
+        .delete-event-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,0,85,0.3);
         }
     </style>
 </head>
 <body>
-    <div class="nav-buttons" style="margin-bottom: 20px;">
-        <a href="index.html" class="nav-button">Home</a>
+    <div class="logo-container">
+        <div class="logo">Evigo</div>
     </div>
-    <h1>Calendar</h1>
     <div class="info-windows">
         <div class="info-window">
             <h3>Upcoming Event</h3>
@@ -447,19 +445,20 @@
                 const timeBlock = document.createElement('div');
                 timeBlock.className = 'time-block';
                 
-                // Check if there's an event for this time slot
                 const eventKey = AppData.calendar.getEventKey(year, month, day, hour);
                 const event = AppData.calendar.eventsData[eventKey];
                 
-                // Create time slot content
                 const timeContent = document.createElement('div');
                 timeContent.className = 'time-content';
                 if (event) {
                     timeContent.innerHTML = `
                         <span class="time">${hour}:00</span>
                         <span class="event-title" onclick="toggleEventDetails(event, '${eventKey}')">${event.title}</span>
+                        <div class="event-controls">
+                            <button class="delete-event-btn" onclick="deleteEvent('${eventKey}', ${year}, ${month}, ${day})">Delete</button>
+                        </div>
                     `;
-                    // Create details view (initially hidden)
+                    
                     const detailsView = document.createElement('div');
                     detailsView.className = 'event-details-view';
                     detailsView.id = `details-${eventKey}`;
@@ -540,27 +539,38 @@
             const selectedDate = document.getElementById('selectedDate').textContent;
             const [month, day, year] = selectedDate.split(' ');
             const monthIndex = monthNames.indexOf(month);
+            const dayNumber = parseInt(day.replace(',', '')); // Remove comma from day
 
-            // Save event data
-            const eventKey = AppData.calendar.getEventKey(year, monthIndex, parseInt(day), hour);
-            AppData.addEvent({
+            // Create event object
+            const event = {
                 title: title,
                 details: details
-            }, {
-                year: year,
+            };
+
+            // Create date object for AppData
+            const date = {
+                year: parseInt(year),
                 month: monthIndex,
-                day: parseInt(day),
-                hours: hour
-            });
+                day: dayNumber,
+                hours: hour,
+                minutes: 0
+            };
+
+            // Save event using AppData
+            AppData.addEvent(event, date);
 
             // Get the time block element
             const timeBlock = document.getElementById(`eventTitle${hour}`).closest('.time-block');
 
             // Update the time block content to show the new event
+            const eventKey = AppData.calendar.getEventKey(year, monthIndex, dayNumber, hour);
             const timeContent = timeBlock.querySelector('.time-content');
             timeContent.innerHTML = `
                 <span class="time">${hour}:00</span>
                 <span class="event-title" onclick="toggleEventDetails(event, '${eventKey}')">${title}</span>
+                <div class="event-controls">
+                    <button class="delete-event-btn" onclick="deleteEvent('${eventKey}', ${year}, ${monthIndex}, ${dayNumber})">Delete</button>
+                </div>
             `;
             
             // Add the details view
@@ -635,6 +645,12 @@
                                 </div>
                                 <div class="quick-details" id="schedule-details-${eventKey}">
                                     ${event.details || 'No details provided'}
+                                    <div class="event-controls">
+                                        <button class="delete-event-btn" 
+                                                onclick="deleteEvent('${eventKey}', ${thisYear}, ${thisMonth}, ${today})">
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </li>
                         `;
@@ -751,6 +767,36 @@
 
         // Initialize calendar with AppData
         generateCalendar(AppData.calendar.currentMonth, AppData.calendar.currentYear);
+
+        // Add the deleteEvent function
+        function deleteEvent(eventKey, year, month, day) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                // Delete from AppData
+                delete AppData.calendar.eventsData[eventKey];
+                AppData.saveData();
+
+                // Refresh the views
+                generateCalendar(currentMonth, currentYear);
+                updateInfoWindows();
+                openDailyView(day, month, year);
+            }
+        }
     </script>
+
+    <!-- Update the navigation section at the bottom of the body -->
+    <div class="nav-container">
+        <div class="nav-icons">
+            <div class="nav-background"></div>
+            <a href="alarm.html" class="nav-item">
+                ALARM
+            </a>
+            <a href="index.html" class="center-button">
+                HOME
+            </a>
+            <a href="weather.html" class="nav-item">
+                WEATHER
+            </a>
+        </div>
+    </div>
 </body>
 </html> 

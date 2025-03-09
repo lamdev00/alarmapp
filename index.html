@@ -3,49 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Reader</title>
+    <title>Evigo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        #countdown {
-            font-size: 2em;
-        }
-        .calendar-button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #2575fc;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
             font-family: 'Roboto', sans-serif;
-            font-weight: 500;
-            transition: background-color 0.3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .calendar-button:hover {
-            background-color: #1a5bb8;
+        .logo-container {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .quote-container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            margin: 40px auto;
+            padding: 20px;
+            font-size: 24px;
+            line-height: 1.4;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-container {
+            position: fixed;
+            bottom: 40px;
+            width: 90%;
+            max-width: 400px;
+            background: rgba(42, 42, 42, 0.95);
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-icons {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 20px;
+            border-radius: 12px;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-5px);
+            color: #ff00ff;
+        }
+
+        .center-button {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -45px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255,0,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            color: white;
+            text-align: center;
+        }
+
+        .center-button:hover {
+            transform: translateY(-8px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255,0,255,0.4);
+        }
+
+        .nav-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(37,117,252,0.1), 
+                rgba(255,0,255,0.1), 
+                rgba(37,117,252,0.1));
+            border-radius: 15px;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
-    <h1>Weather Reader</h1>
-    <div id="countdown">Next update in: 10:00</div>
-    <button onclick="readWeather()">Read Current Temperature</button>
-    <div>
-        <input type="time" id="scheduleTime" />
-        <button onclick="scheduleReadout()">Schedule Readout</button>
+    <div class="logo-container">
+        <div class="logo">Evigo</div>
     </div>
-    <a href="calendar.html" class="calendar-button">
-        Open Calendar
-    </a>
-    <a href="alarm.html" class="calendar-button" style="margin-left: 10px;">
-        Wake-up Alarm
-    </a>
-    <script src="shared.js"></script>
-    <script src="script.js"></script>
+
+    <div class="quote-container" id="quoteDisplay">
+        <!-- Quote will be inserted here -->
+    </div>
+
+    <div class="nav-container">
+        <div class="nav-icons">
+            <div class="nav-background"></div>
+            <a href="alarm.html" class="nav-item">
+                ALARM
+            </a>
+            <a href="calendar.html" class="center-button">
+                CALENDAR
+            </a>
+            <a href="weather.html" class="nav-item">
+                WEATHER
+            </a>
+        </div>
+    </div>
+
+    <script src="appData.js"></script>
+    <script>
+        // Array of motivational quotes
+        const quotes = [
+            "The only way to do great work is to love what you do.",
+            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "Believe you can and you're halfway there.",
+            "Don't watch the clock; do what it does. Keep going.",
+            "The future belongs to those who believe in the beauty of their dreams.",
+            "Your time is limited, don't waste it living someone else's life.",
+            "The best way to predict the future is to create it.",
+            "Everything you've ever wanted is on the other side of fear.",
+            "Success is walking from failure to failure with no loss of enthusiasm.",
+            "The harder you work for something, the greater you'll feel when you achieve it."
+        ];
+
+        // Function to display a random quote
+        function displayRandomQuote() {
+            const quoteDisplay = document.getElementById('quoteDisplay');
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            quoteDisplay.textContent = quotes[randomIndex];
+        }
+
+        // Display a quote when the page loads
+        displayRandomQuote();
+    </script>
 </body>
 </html> 
