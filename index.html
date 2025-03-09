@@ -27,7 +27,11 @@
             font-size: 48px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: rgbGlow 8s infinite linear;
+        }
+
+        .logo:hover {
+            animation: rgbGlow 2s infinite linear;
         }
 
         .quote-container {
@@ -123,6 +127,29 @@
                 rgba(37,117,252,0.1));
             border-radius: 15px;
             z-index: 0;
+        }
+
+        @keyframes rgbGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
+            33% {
+                text-shadow: 0 0 10px rgba(0,255,255,0.7),
+                             0 0 20px rgba(0,255,255,0.5),
+                             0 0 30px rgba(0,255,255,0.3);
+            }
+            66% {
+                text-shadow: 0 0 10px rgba(255,255,0,0.7),
+                             0 0 20px rgba(255,255,0,0.5),
+                             0 0 30px rgba(255,255,0,0.3);
+            }
+            100% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
         }
     </style>
 </head>

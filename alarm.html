@@ -23,11 +23,38 @@
             margin-bottom: 40px;
         }
 
+        @keyframes rgbGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
+            33% {
+                text-shadow: 0 0 10px rgba(0,255,255,0.7),
+                             0 0 20px rgba(0,255,255,0.5),
+                             0 0 30px rgba(0,255,255,0.3);
+            }
+            66% {
+                text-shadow: 0 0 10px rgba(255,255,0,0.7),
+                             0 0 20px rgba(255,255,0,0.5),
+                             0 0 30px rgba(255,255,0,0.3);
+            }
+            100% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
+        }
+
         .logo {
             font-size: 48px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: rgbGlow 8s infinite linear;
+        }
+
+        .logo:hover {
+            animation: rgbGlow 2s infinite linear;
         }
 
         .container {
@@ -64,25 +91,26 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .scroll-select {
-            height: 120px;
+        .hours, .minutes {
+            height: 150px;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
-            background: rgba(44, 44, 46, 0.95);
-            border-radius: 12px;
-            padding: 0 20px;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            background: rgba(28, 28, 30, 0.95);
+            border-radius: 12px;
+            padding: 0 20px;
         }
 
-        .scroll-select::-webkit-scrollbar {
+        .hours::-webkit-scrollbar, 
+        .minutes::-webkit-scrollbar {
             display: none;
         }
 
-        .scroll-select div {
-            height: 40px;
-            line-height: 40px;
+        .hours div, .minutes div {
+            height: 50px;
+            line-height: 50px;
             font-size: 24px;
             scroll-snap-align: center;
             color: rgba(255, 255, 255, 0.5);
@@ -91,7 +119,8 @@
             transition: all 0.3s ease;
         }
 
-        .scroll-select div.selected {
+        .hours div.selected, 
+        .minutes div.selected {
             color: #ff00ff;
             font-size: 28px;
             text-shadow: 0 0 10px rgba(255,0,255,0.3);
@@ -257,6 +286,32 @@
             transform: translateY(-8px) scale(1.1);
             box-shadow: 0 8px 25px rgba(255,0,255,0.4);
         }
+
+        /* Add gradient overlays */
+        .hours::before,
+        .hours::after,
+        .minutes::before,
+        .minutes::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hours::before,
+        .minutes::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(28, 28, 30, 0.95) 0%, rgba(28, 28, 30, 0) 100%);
+        }
+
+        .hours::after,
+        .minutes::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(28, 28, 30, 0.95) 0%, rgba(28, 28, 30, 0) 100%);
+        }
     </style>
 </head>
 <body>
@@ -269,16 +324,16 @@
 
         <div class="alarm-form">
             <div class="time-picker">
-                <div class="scroll-select hours" id="hourSelect">
+                <div class="hours" id="hourSelect">
                     <!-- Hours will be populated by JavaScript -->
                 </div>
                 <span class="time-divider">:</span>
-                <div class="scroll-select minutes" id="minuteSelect">
+                <div class="minutes" id="minuteSelect">
                     <!-- Minutes will be populated by JavaScript -->
                 </div>
                 <div class="period-select">
-                    <button class="period-btn selected" id="amBtn">AM</button>
-                    <button class="period-btn" id="pmBtn">PM</button>
+                    <button class="period-btn" id="amBtn" onclick="togglePeriod('AM')">AM</button>
+                    <button class="period-btn" id="pmBtn" onclick="togglePeriod('PM')">PM</button>
                 </div>
             </div>
             
@@ -381,32 +436,139 @@
             return element;
         }
 
-        // Modify the initializeTimePicker function
-        function initializeTimePicker() {
-            const hourSelect = document.getElementById('hourSelect');
-            const minuteSelect = document.getElementById('minuteSelect');
+        // Add this function to your script section
+        function centerSelectedTime() {
+            const scrollSelects = document.querySelectorAll('.scroll-select');
             
-            // Create arrays for hours and minutes
-            const hours = Array.from({length: 12}, (_, i) => (i + 1).toString().padStart(2, '0'));
-            const minutes = Array.from({length: 60}, (_, i) => i.toString().padStart(2, '0'));
-            
-            // Initialize infinite scroll for hours and minutes
-            createInfiniteScrollList(hourSelect, hours);
-            createInfiniteScrollList(minuteSelect, minutes);
+            scrollSelects.forEach(select => {
+                const selectedElement = select.querySelector('.selected');
+                if (selectedElement) {
+                    const containerHeight = select.offsetHeight;
+                    const elementHeight = selectedElement.offsetHeight;
+                    // Calculate scroll position to center the element
+                    const scrollPosition = selectedElement.offsetTop - (containerHeight / 2) + (elementHeight / 2);
+                    select.scrollTop = scrollPosition;
+                }
+            });
+        }
 
-            // Setup AM/PM toggle
-            const amBtn = document.getElementById('amBtn');
-            const pmBtn = document.getElementById('pmBtn');
+        // Add this function to create infinite scroll for time wheels
+        function createInfiniteTimeWheel(container, start, end, current, isHours = true) {
+            // Create 3 sets of numbers for infinite scroll
+            for (let i = 0; i < 3; i++) {
+                for (let num = start; num <= end; num++) {
+                    const div = document.createElement('div');
+                    // Format numbers to always show two digits
+                    div.textContent = num.toString().padStart(2, '0');
+                    if (num === current && i === 1) {
+                        div.classList.add('selected');
+                    }
+                    container.appendChild(div);
+                }
+            }
+
+            let isDragging = false;
+            let startY;
+            let scrollTop;
+            let selectedValue = current;
+
+            container.addEventListener('scroll', () => {
+                const totalHeight = container.scrollHeight;
+                const sectionHeight = totalHeight / 3;
+
+                // If we scroll past the first or last section, reset to middle section
+                if (container.scrollTop < sectionHeight / 2 || container.scrollTop > sectionHeight * 2) {
+                    container.scrollTop = sectionHeight + (container.scrollTop % sectionHeight);
+                }
+
+                // Update selected value
+                const elements = Array.from(container.children);
+                const containerRect = container.getBoundingClientRect();
+                const containerCenter = containerRect.top + (containerRect.height / 2);
+                
+                let closestElement = null;
+                let minDistance = Infinity;
+                
+                elements.forEach(element => {
+                    const elementRect = element.getBoundingClientRect();
+                    const elementCenter = elementRect.top + (elementRect.height / 2);
+                    const distance = Math.abs(containerCenter - elementCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestElement = element;
+                    }
+                    element.classList.remove('selected');
+                });
+                
+                if (closestElement) {
+                    closestElement.classList.add('selected');
+                    selectedValue = parseInt(closestElement.textContent);
+                }
+            });
+        }
+
+        // Update the initializeTimePicker function
+        function initializeTimePicker() {
+            const hoursContainer = document.querySelector('.hours');
+            const minutesContainer = document.querySelector('.minutes');
             
-            amBtn.onclick = () => {
-                amBtn.classList.add('selected');
-                pmBtn.classList.remove('selected');
-            };
+            // Generate hours (1-12)
+            for (let i = 1; i <= 12; i++) {
+                const div = document.createElement('div');
+                div.textContent = i.toString().padStart(2, '0');
+                if (i === 3) div.classList.add('selected'); // Default to 3:00
+                hoursContainer.appendChild(div);
+            }
             
-            pmBtn.onclick = () => {
-                pmBtn.classList.add('selected');
-                amBtn.classList.remove('selected');
-            };
+            // Generate minutes (00-59)
+            for (let i = 0; i < 60; i++) {
+                const div = document.createElement('div');
+                div.textContent = i.toString().padStart(2, '0');
+                if (i === 2) div.classList.add('selected'); // Default to :02
+                minutesContainer.appendChild(div);
+            }
+
+            // Add scroll event listeners
+            [hoursContainer, minutesContainer].forEach(container => {
+                container.addEventListener('scroll', function() {
+                    const elements = Array.from(this.children);
+                    const containerRect = this.getBoundingClientRect();
+                    const containerCenter = containerRect.top + (containerRect.height / 2);
+                    
+                    let closestElement = null;
+                    let minDistance = Infinity;
+                    
+                    elements.forEach(element => {
+                        const elementRect = element.getBoundingClientRect();
+                        const elementCenter = elementRect.top + (elementRect.height / 2);
+                        const distance = Math.abs(containerCenter - elementCenter);
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestElement = element;
+                        }
+                        
+                        element.classList.remove('selected');
+                    });
+                    
+                    if (closestElement) {
+                        closestElement.classList.add('selected');
+                    }
+                });
+
+                // Add scroll end detection
+                let scrollTimeout;
+                container.addEventListener('scroll', function() {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        centerSelectedTime();
+                    }, 150); // Adjust timing as needed
+                });
+            });
+
+            // Initial centering
+            centerSelectedTime();
         }
 
         function initializeAlarmSound() {
@@ -429,13 +591,13 @@
             }
             
             let hour = parseInt(hourElement.textContent);
-            const minute = minuteElement.textContent;
+            const minute = parseInt(minuteElement.textContent);
             
             // Convert to 24-hour format
             if (isPM && hour !== 12) hour += 12;
             if (!isPM && hour === 12) hour = 0;
             
-            const alarmTime = `${hour.toString().padStart(2, '0')}:${minute}`;
+            const alarmTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
             
             const alarm = {
                 time: alarmTime,
@@ -613,12 +775,28 @@
 
         // Initialize the time picker and alarm sound when the page loads
         window.onload = function() {
+            const hoursContainer = document.querySelector('.hours');
+            const minutesContainer = document.querySelector('.minutes');
+            const currentHour = new Date().getHours();
+            
+            createInfiniteTimeWheel(hoursContainer, 1, 12, currentHour > 12 ? currentHour - 12 : currentHour || 12, true);
+            createInfiniteTimeWheel(minutesContainer, 0, 59, new Date().getMinutes(), false);
+            
+            // Set initial AM/PM
+            const ampmButtons = document.querySelectorAll('.ampm-btn');
+            const isAM = currentHour < 12;
+            ampmButtons.forEach(btn => {
+                if ((btn.textContent === 'AM' && isAM) || (btn.textContent === 'PM' && !isAM)) {
+                    btn.classList.add('selected');
+                }
+            });
+            
             initializeTimePicker();
             initializeAlarmSound();
             updateAlarmsList();
         };
 
-        // Implement the setAlarmTime function
+        // Call centerSelectedTime after setting a new time
         window.setAlarmTime = function(time) {
             const [hours, minutes] = time.split(':');
             // Set the time in your time picker
@@ -646,10 +824,27 @@
                     pmBtn.classList.remove('selected');
                 }
                 
+                // Center the selected time
+                centerSelectedTime();
+                
                 // Set the alarm
                 setAlarm();
             }
         };
+
+        // Add this function to handle period selection
+        function togglePeriod(period) {
+            const amBtn = document.getElementById('amBtn');
+            const pmBtn = document.getElementById('pmBtn');
+            
+            if (period === 'AM') {
+                amBtn.classList.add('selected');
+                pmBtn.classList.remove('selected');
+            } else {
+                pmBtn.classList.add('selected');
+                amBtn.classList.remove('selected');
+            }
+        }
     </script>
 </body>
 </html> 

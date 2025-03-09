@@ -20,30 +20,54 @@
 
         .logo-container {
             margin-top: 40px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
         .logo {
             font-size: 48px;
             font-weight: bold;
             color: white;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: rgbGlow 8s infinite linear;
+        }
+
+        .logo:hover {
+            animation: rgbGlow 2s infinite linear;
         }
 
         .city-name {
             font-size: 28px;
             color: #ff00ff;
-            margin-bottom: 30px;
+            margin: 20px 0 40px 0;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255,0,255,0.3);
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .city-name::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -15px;
+            right: -15px;
+            bottom: -5px;
+            border-radius: 15px;
+            animation: rotatingGlow 4s infinite linear;
+            z-index: -1;
         }
 
         .city-name:hover {
             transform: scale(1.05);
-            text-shadow: 0 0 15px rgba(255,0,255,0.5);
+        }
+
+        .city-name:hover::before {
+            animation: rotatingGlow 2s infinite linear;
         }
 
         .weather-container {
@@ -52,14 +76,28 @@
             margin-bottom: 100px;
         }
 
+        .window-title {
+            font-size: 24px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            background: linear-gradient(145deg, #ff00ff, #cc00cc);
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 5px 15px rgba(255,0,255,0.2);
+        }
+
         .current-weather {
             background: rgba(42, 42, 42, 0.95);
             padding: 25px;
-            border-radius: 20px;
+            border-radius: 0 0 20px 20px;
+            margin-top: 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
             text-align: center;
         }
 
@@ -288,6 +326,78 @@
             transform: translateX(5px);
             padding-left: 20px;
         }
+
+        @keyframes rgbGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
+            33% {
+                text-shadow: 0 0 10px rgba(0,255,255,0.7),
+                             0 0 20px rgba(0,255,255,0.5),
+                             0 0 30px rgba(0,255,255,0.3);
+            }
+            66% {
+                text-shadow: 0 0 10px rgba(255,255,0,0.7),
+                             0 0 20px rgba(255,255,0,0.5),
+                             0 0 30px rgba(255,255,0,0.3);
+            }
+            100% {
+                text-shadow: 0 0 10px rgba(255,0,255,0.7),
+                             0 0 20px rgba(255,0,255,0.5),
+                             0 0 30px rgba(255,0,255,0.3);
+            }
+        }
+
+        .forecast-temps {
+            font-size: 1.4em;
+            margin: 10px 0;
+            color: white;
+        }
+
+        .high-temp {
+            color: #ff00ff;
+            font-weight: bold;
+        }
+
+        .temp-divider {
+            margin: 0 5px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .low-temp {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .forecast-condition {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        @keyframes rotatingGlow {
+            0% {
+                box-shadow: 0 0 15px rgba(255,0,255,0.5),
+                            5px 0 20px rgba(0,255,255,0.3),
+                            -5px 0 20px rgba(255,255,0,0.3);
+            }
+            33% {
+                box-shadow: -5px 0 15px rgba(255,0,255,0.5),
+                            0 0 20px rgba(0,255,255,0.3),
+                            5px 0 20px rgba(255,255,0,0.3);
+            }
+            66% {
+                box-shadow: 5px 0 15px rgba(255,0,255,0.5),
+                            -5px 0 20px rgba(0,255,255,0.3),
+                            0 0 20px rgba(255,255,0,0.3);
+            }
+            100% {
+                box-shadow: 0 0 15px rgba(255,0,255,0.5),
+                            5px 0 20px rgba(0,255,255,0.3),
+                            -5px 0 20px rgba(255,255,0,0.3);
+            }
+        }
     </style>
 </head>
 <body>
@@ -297,6 +407,7 @@
     </div>
 
     <div class="weather-container">
+        <div class="window-title">Current Weather</div>
         <div class="current-weather">
             <div class="current-temp" id="currentTemp">--°F</div>
             <div class="weather-details">
@@ -376,7 +487,11 @@
                     forecastDay.className = 'forecast-day';
                     forecastDay.innerHTML = `
                         <div class="day-name">${day}</div>
-                        <div class="forecast-temp">${Math.round(data.temp)}°F</div>
+                        <div class="forecast-temps">
+                            <span class="high-temp">${Math.round(data.temp_max)}°</span>
+                            <span class="temp-divider">/</span>
+                            <span class="low-temp">${Math.round(data.temp_min)}°</span>
+                        </div>
                         <div class="forecast-condition">${data.condition}</div>
                     `;
                     forecastContainer.appendChild(forecastDay);

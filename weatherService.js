@@ -78,7 +78,7 @@ const WeatherService = {
             const response = await fetch(url);
             const data = await response.json();
             
-            // Process daily forecasts
+            // Process daily forecasts with high and low temps
             const dailyForecasts = {};
             data.list.forEach(item => {
                 const date = new Date(item.dt * 1000);
@@ -86,9 +86,14 @@ const WeatherService = {
                 
                 if (!dailyForecasts[day]) {
                     dailyForecasts[day] = {
-                        temp: item.main.temp,
+                        temp_max: item.main.temp_max,
+                        temp_min: item.main.temp_min,
                         condition: item.weather[0].description
                     };
+                } else {
+                    // Update high and low temperatures
+                    dailyForecasts[day].temp_max = Math.max(dailyForecasts[day].temp_max, item.main.temp_max);
+                    dailyForecasts[day].temp_min = Math.min(dailyForecasts[day].temp_min, item.main.temp_min);
                 }
             });
 
